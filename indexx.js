@@ -1,10 +1,13 @@
 require('dotenv').config();
 
 const express = require("express");
-const conn = require('./db/conn');
-const jogo = require('./models/jogo')
-
+const conn = require('./db/connn');
+const jogo = require('./models/jogos')
+const handlebars = require("express-handlebars");
 const app = express();
+
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
 
 app.use(
     express.urlencoded({
