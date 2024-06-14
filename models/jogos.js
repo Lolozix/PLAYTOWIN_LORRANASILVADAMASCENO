@@ -1,24 +1,24 @@
-const db = require('../db/connn')
-const {DataTypes} = require("sequelize");
+const db = require('../db/conn')
+const { DataTypes } = require("sequelize");
 
-const jogo = db.define("jogo", {
-    id:{
+const Jogos = db.define("Jogos", {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true 
+        autoIncrement: true
     },
-    titulo:{
-        type:DataTypes.STRING,
+    titulo: {
+        type: DataTypes.STRING,
         require: true,
     },
-    descricao:{
-        type:DataTypes.STRING,
+    descricao: {
+        type: DataTypes.STRING,
         require: true,
     },
-    preco:{
-        type:DataTypes.NUMBER,
-        require: true
+    preco: {
+        type: DataTypes.DECIMAL,
+        require: true,
     }
 });
 
-module.exports= jogo;
+module.exports = Jogos;
