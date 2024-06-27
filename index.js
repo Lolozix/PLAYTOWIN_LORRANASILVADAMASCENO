@@ -1,82 +1,93 @@
-require('dotenv').config();
-
+// Importações de módulos:
+require("dotenv").config();
+const conn = require("../db/conn");
 const express = require("express");
-const conn = require('./db/conn');
-const Jogos = require("./models/Jogos")
-const Usuario = require('./models/Usuario');
+const exphbs = require("express-handlebars");
 
-const handlebars = require("express-handlebars");
+const Usuario = require("../models/Usuario");
+const Cartao = require("../models/Cartao");
+const Jogo = require("../models/Jogo");
+
+Jogo.belongsToMany(Usuario, { through: "aquisicoes" });
+Usuario.belongsToMany(Jogo, { through: "aquisicoes" });
 
 const app = express();
 
-
-app.engine("handlebars", handlebars.engine());
+app.engine("handlebars", exphbs.engine());
 app.set("view engine", "handlebars");
 
-app.use(express.urlencoded({ urlencoded: true }));
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
 app.use(express.json());
 
-app.get("/usuario/novo", (req, res) => {
-    res.render(`formularioUsuario`);
-})
-
 app.get("/", (req, res) => {
-    res.render(`home`);
-})
+  res.render("home");
+});
 
-app.get("/usuarios", (req, res) => {
-    res.render(`usuarios`);
-})
+app.get("/usuarios", async (req, res) => {
+  const usuarios = await Usuario.findAll({ raw: true });
 
-app.get("/jogos/novo", (req, res) => {
-    res.sendFile(`${__dirname}/views/formularioJogos.html`);
-})
+  res.render("usuarios", { usuarios });
+});
 
-app.post("/jogos/novo", async (req, res) => {
-    const dadosJogos = {
-        titulo: req.body.titulo,
-        descricao: req.body.descricao,
-        preco: req.body.preco
-    };
+app.get("/usuarios/novo", (req, res) => {
+  res.render("formUsuario");
+});
 
-    const jogos = await Jogos.create(dadosJogos);
-    res.send("Jogo inserido sob o id" + jogos.id);
-})
-   
-app.post("/usuario/novo", async (req, res) => {
-    const dadosUsuario = {
-        nickname: req.body.nickname,
-        nome: req.body.name
+app.post("/usuarios/novo", async (req, res) => {
+  const dadosUsuario = {
+    nickname: req.body.nickname,
+    nome: req.body.nome,
+  };
 
-    };
+  const usuario = await Usuario.create(dadosUsuario);
+  res.send("Usuário inserido sob o id " + usuario.id);
+});
 
-    const usuario = await Jogos.create(dadosUsuario);
-    res.send("Usuario inserido sob o id" + usuario.id);
-})
+app.get("/usuarios/:id/update", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const usuario = await Usuario.findByPk(id, { raw: true });
 
+  res.render("formUsuario", { usuario });
+
+});
+
+app.post("/usuarios/:id/update", async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  const dadosUsuario = {
+    nickname: req.body.nickname,
+    nome: req.body.nome,
+  };
+
+  const retorno = await Usuario.update(dadosUsuario, { where: { id: id } });
+
+  if (retorno > 0) {
+    res.redirect("/usuarios");
+  } else {
+    res.send("Erro ao atualizar usuário");
+  }
+});
+
+app.post("/usuarios/:id/delete", async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  const retorno = await Usuario.destroy({ where: { id: id } });
+
+  if (retorno > 0) {
+    res.redirect("/usuarios");
+  } else {
+    res.send("Erro ao excluir usuário");
+  }
+});
+
+app.get("/cartoes")
 
 app.listen(8000, () => {
     console.log("Server rodando!");
+    console.log("http://localhost:8000/")
 })
-
-conn
-    .sync()
-    .then(() => {
-        console.log('Está conectado e sincronizado corretamente com o banco de dados!');
-    })
-    .catch((err) => {
-        console.log('Ocorreu um erro e não está sendo sincronizado mais' + err);
-    })
-
-
-
-
-conn
-    .authenticate()
-    .then(() => {
-        console.log('Está conectado com sucesso!');
-
-    })
-    .catch((err) => {
-        console.log('Ocorreu um erro' + err);
-    })
