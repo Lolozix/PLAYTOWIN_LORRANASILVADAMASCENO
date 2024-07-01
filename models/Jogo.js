@@ -10,7 +10,7 @@ const Jogo = db.define("Jogo",{
         type: DataTypes.STRING,
         allowNull: false,
     },
-    preco:{
+    precoBase:{
         type: DataTypes.INTEGER,
         allowNull: false,
     }
