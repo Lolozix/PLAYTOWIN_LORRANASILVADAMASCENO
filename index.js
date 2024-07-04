@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config();
 const express = require("express");
 const conn = require("./db/conn");
 const handlebars = require("express-handlebars");
@@ -6,14 +6,21 @@ const handlebars = require("express-handlebars");
 const Usuario = require("./models/Usuario");
 const Jogo = require("./models/Jogo");
 const Cartao = require("./models/Cartao");
-const Conquista = require("./models/Conquista")
+const Conquista = require("./models/Conquista");
 
 const { DataTypes } = require("sequelize");
 
 const app = express();
 
-app.engine("handlebars", handlebars.engine())
-app.set("view engine", "handlebars")
+console.log("DB_DATABASE:", process.env.DB_DATABASE);
+console.log("DB_USERNAME:", process.env.DB_USERNAME);
+console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_PORT:", process.env.DB_PORT);
+console.log("DB_DIALECT:", process.env.DB_DIALECT);
+
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -63,7 +70,7 @@ app.post("/usuarios/:id/atualizar", async (req, res) => {
 });
 
 app.post("/usuarios/excluir", async (req, res) => {
-  const id = req.body.id
+  const id = req.body.id;
   const registroAfetados = await Usuario.destroy({ where: { id: id } });
 
   if (registroAfetados > 0) {
@@ -116,7 +123,7 @@ app.post("/jogos/:id/atualizar", async (req, res) => {
 });
 
 app.post("/jogos/excluir", async (req, res) => {
-  const id = req.body.id
+  const id = req.body.id;
   const registroAfetados = await Jogo.destroy({ where: { id: id } });
 
   if (registroAfetados > 0) {
@@ -127,12 +134,11 @@ app.post("/jogos/excluir", async (req, res) => {
 });
 
 app.get('/usuarios/:id/cartoes', async (req, res) => {
-  const id = parseInt(req.params.id)
+  const id = parseInt(req.params.id);
   const usuario = await Usuario.findByPk(id, { include: ["Cartaos"] });
 
   let cartoes = usuario.Cartaos;
-  cartoes = cartoes.map((cartao) => cartao.toJSON())
-
+  cartoes = cartoes.map((cartao) => cartao.toJSON());
 
   res.render("Cartoes.handlebars", { usuario: usuario.toJSON(), cartoes });
 });
@@ -144,10 +150,9 @@ app.get("/usuarios/:id/novoCartao", async (req, res) => {
   res.render("formularioCartao", { usuario });
 });
 
-
 app.post("/usuarios/:id/novoCartao", async (req, res) => {
   const id = parseInt(req.params.id);
-  
+
   const dadosCartao = {
     numero: req.body.numero,
     nome: req.body.nome,
@@ -161,12 +166,11 @@ app.post("/usuarios/:id/novoCartao", async (req, res) => {
 });
 
 app.get('/jogos/:id/conquistas', async (req, res) => {
-  const id = parseInt(req.params.id)
+  const id = parseInt(req.params.id);
   const jogo = await Jogo.findByPk(id, { include: ["Conquista"] });
 
   let conquistas = jogo.Conquista;
-  conquistas = conquistas.map((conquista) => conquista.toJSON())
-
+  conquistas = conquistas.map((conquista) => conquista.toJSON());
 
   res.render("Conquista.handlebars", { jogo: jogo.toJSON(), conquistas });
 });
@@ -192,14 +196,13 @@ app.post("/jogos/:id/novaConquista", async (req, res) => {
   res.redirect(`/jogos/${id}/conquistas`);
 });
 
-app.listen(8000, () => {
-  console.log("Servidor rodando!");
-});
-
 conn
   .sync({ force: true })
   .then(() => {
     console.log("Conectado ao banco de dados com sucesso!");
+    app.listen(8000, () => {
+      console.log("Servidor rodando!");
+    });
   })
   .catch((err) => {
     console.error("Ocorreu um erro ao conectar ao banco de dados:", err);
